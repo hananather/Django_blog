@@ -3,7 +3,16 @@ from django.utils import timezone
 from django.conf import settings
 
     
+class PublishedManager(models.Manager):
+    def get_queryset(self) -> models.QuerySet:
+        return (super().get_queryset().filter(status = Post.Status.PUBLISHED))
+
+
 class Post(models.Model):
+    
+    objects = models.Manager() # default manager
+    published = PublishedManager() # Our custom manager
+    
     class Status(models.TextChoices):
         DRAFT = 'DF', 'DRAFT'
         PUBLISHED = 'PB', 'Published'
@@ -13,9 +22,10 @@ class Post(models.Model):
     body = models.TextField()
     publish = models.DateTimeField(default=timezone.now)
     created = models.DateTimeField(auto_now_add=True)
-    updated = models.CharField(
+    updated = models.DateTimeField(auto_now=True)
+    status = models.CharField(  # Add this new field for status
         max_length=2,
-        choices=Status,
+        choices=Status.choices,  # Use .choices here
         default=Status.DRAFT
     )
     
